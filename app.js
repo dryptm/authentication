@@ -28,7 +28,8 @@ app.use(passport.session());
 
 const userschema=new mongoose.Schema({ 
     username: String,
-    password:String 
+    password:String,
+    secret:String
 });
 
 userschema.plugin(passportlocalmongoose);
@@ -88,15 +89,39 @@ app.get("/logout",function(req,res){
 })
 
 app.get("/secrets",function(req,res){
-    if(req.isAuthenticated){
-        res.render("secrets")
+    user.find({"secret" : {$ne:null}},function(err,foundlist){
+        if(foundlist){
+            res.render("secrets",{mysecrets:foundlist});
+        }
+        else{
+            console.log(err);
+        }
+    })
+})
+
+app.get("/submit",function(req,res){
+    if (req.isAuthenticated()){
+        res.render("submit");
     }
     else{
-        res.redirect("/login")
+        res.redirect("/login")  
     }
 })
 
 
+
+app.post("/submit",function(req,res){
+    user.findById(req.user.id,function(err,foundlist){
+        if(foundlist){
+            foundlist.secret=req.body.secret;
+            foundlist.save();
+            res.redirect("/secrets")
+        }
+        else{
+            console.log(err)
+        }
+    })
+})
 app.post("/register",function(req,res){
     user.register({username:req.body.username},req.body.password,function(err,user){
         if(err){
