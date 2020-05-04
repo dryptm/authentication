@@ -113,7 +113,7 @@ app.get("/submit",function(req,res){
 app.post("/submit",function(req,res){
     user.findById(req.user.id,function(err,foundlist){
         if(foundlist){
-            foundlist.secret=req.body.secret;
+            foundlist.secret.push(req.body.secret);
             foundlist.save();
             res.redirect("/secrets")
         }
